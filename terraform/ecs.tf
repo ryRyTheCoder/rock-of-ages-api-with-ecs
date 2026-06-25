@@ -23,14 +23,22 @@ resource "aws_ecs_task_definition" "api" {
       image     = "${aws_ecr_repository.api.repository_url}:latest"
       essential = true
 
-      portMappings = [
-        {
-          containerPort = 8000
-          protocol      = "tcp"
-        }
-      ]
+  portMappings = [
+    {
+      containerPort = 8000
+      protocol      = "tcp"
+    }
+  ]
 
-      logConfiguration = {
+  healthCheck = {
+    command     = ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+    interval    = 30
+    timeout     = 5
+    retries     = 3
+    startPeriod = 60
+  }
+
+  logConfiguration = {
         logDriver = "awslogs"
         options = {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
